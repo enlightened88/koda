@@ -16,7 +16,7 @@ jobs:
     name: Verify Version
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Require tag on main
@@ -53,8 +53,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: verify-version
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        with:
+          toolchain: 1.99.1 # = rust-toolchain.toml (pin guarded in ci.yml)
       - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2.8.1
       - name: Install cargo-audit
         run: cargo install cargo-audit --locked
@@ -84,8 +86,10 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        with:
+          toolchain: 1.99.1 # = rust-toolchain.toml (pin guarded in ci.yml)
       - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2.8.1
       - name: Set up Linux sandbox (bubblewrap)
         if: runner.os == 'Linux'
@@ -128,9 +132,10 @@ jobs:
           - target: aarch64-apple-darwin
             os: macos-14
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
+          toolchain: 1.99.1 # = rust-toolchain.toml (pin guarded in ci.yml)
           targets: ${{ matrix.target }}
       - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2.8.1
         with:
@@ -160,8 +165,10 @@ jobs:
     environment: crates-io
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        with:
+          toolchain: 1.99.1 # = rust-toolchain.toml (pin guarded in ci.yml)
       # Publish order follows dependency graph: koda-sandbox → koda-core → koda-cli.
       # Each crate waits for its dep to appear in the sparse index before publishing,
       # otherwise cargo resolve will fail with "no matching version".
@@ -214,7 +221,7 @@ jobs:
     needs: build  # fans out to update-homebrew and publish in parallel
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/download-artifact@v7
         with:
@@ -237,7 +244,7 @@ jobs:
           cat release_body.md
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
           body_path: release_body.md
           files: artifacts/*.tar.gz
@@ -261,7 +268,7 @@ jobs:
           echo "x86_64_linux=$(sha256sum artifacts/koda-x86_64-unknown-linux-gnu.tar.gz | cut -d' ' -f1)" >> $GITHUB_OUTPUT
 
       - name: Update formula
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: lijunzh/homebrew-koda
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
